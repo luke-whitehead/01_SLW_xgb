@@ -1,0 +1,16 @@
+name: 01_SLW_xgb
+channels:
+  - defaults
+dependencies:
+  - numpy
+  - pandas
+  - scipy
+  - python=3.10
+  - matplotlib
+  - jupyter
+  - conda-forge::pyhdf
+  - xarray
+  - conda-forge::netCDF4
+  - dask
+  - conda-forge::py-xgboost
+  
