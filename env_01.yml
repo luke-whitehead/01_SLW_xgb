@@ -13,4 +13,6 @@ dependencies:
   - conda-forge::netCDF4
   - dask
   - conda-forge::py-xgboost
+  - conda-forge::shap
+  - seaborn
   
