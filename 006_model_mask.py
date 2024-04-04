@@ -42,10 +42,12 @@ old_alcf_dir = 'S://atmos_disk//Luke_W_480//MPL_Christchurch_2021//cal_alcf_outp
 
 ## Update 14.3.2023
 ref_mask_dir = 'S://atmos_disk//Luke_W_480//MPL_Christchurch_2021//A//processed{}/'
-peaks_dir = 'S://atmos_disk//Luke_W_480//MPL_Christchurch_2021//B//peaks/'
+
+# peaks_dir = 'S://atmos_disk//Luke_W_480//MPL_Christchurch_2021//B//peaks/'
 
 # output_dir = 'S://atmos_disk//Luke_W_480//MPL_Christchurch_2021//C//{}_model_mask_nohp/mask{}/'
-output_dir = 'S://atmos_disk//Luke_W_480//MPL_Christchurch_2021//C//multiclass_model_mask_nohp/mask{}/'
+# output_dir = 'S://atmos_disk//Luke_W_480//MPL_Christchurch_2021//C//multiclass_model_mask_nohp/mask{}/'
+output_dir = ''
 
 
 META = {
@@ -88,27 +90,53 @@ META = {
 # TARGET = TARGETS[3]
 
 # model_save_name = 'models/X_'+TARGET+'_nohp.json'
+
+
+### For importing model: 
+
 model_save_name = 'models/multi_ij_no_hp.json'
 
 model = xgb.XGBClassifier();
 model.load_model(model_save_name)
+
+
+### For using AG's model: 
+
+# from sklearn.pipeline import Pipeline
+# import joblib
+
+### Opens AG model
+# model_ag_load = xgb.XGBClassifier();
+# model_ag_load.load_model("models/AG_XGBoost.json")
+# std = joblib.load('models/AG_scaler.save') 
+
+# pipe = Pipeline([('standardscaler',std),('xgbclassifier',model_ag_load)])
+
+### Need to reorder columns 
+# new_cols = ['peak_order','num_peaks','peak_prominence','peak_backscatter','peak_width','peak_width_height','peak_temp','peak_alt']
+
+### Then 
+# peaks_df_ag = peaks_df[new_cols]
+# Z_ag = pipe.predict(peaks_df_ag)
+
+
 
 # Load ref mask (to use as base to create model mask)
 VARS = [
     'backscatter',
     'cloud_mask',
     'temp',
-    'LCC_ij',
-    'LCC_j',
-    'ICC_ij',
-    'ICC_j',
-    'SLCC_ij',
-    'SLCC_j',
-    'WLCC_ij',
-    'WLCC_j',
-    'amps_flag',
-    'time',
-    'time_bnds',
+    # 'LCC_ij',
+    # 'LCC_j',
+    # 'ICC_ij',
+    # 'ICC_j',
+    # 'SLCC_ij',
+    # 'SLCC_j',
+    # 'WLCC_ij',
+    # 'WLCC_j',
+    # 'amps_flag',
+    # 'time',
+    # 'time_bnds',
     'zfull'
     ]
 
