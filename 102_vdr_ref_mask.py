@@ -15,6 +15,8 @@ EXCL_VARS = ['ICC_ij', 'ICC_j', 'LCC_ij', 'LCC_j', 'SLCC_ij', 'SLCC_j', 'WLCC_ij
 liq_threshold = 0.1
 mix_threshold = 0.4
 
+date_list = ['20210521', '20210522']
+
 ## FUNCTIONS
 
 def classify(ds, liq_threshold = liq_threshold, mix_threshold = mix_threshold):
@@ -52,5 +54,11 @@ def process(date):
     ds.close()
 
 
-process('20210520')
+def main():
+    for date in date_list:
+        process(date)
+
+
+if __name__ == "__main__":
+    main()
 
