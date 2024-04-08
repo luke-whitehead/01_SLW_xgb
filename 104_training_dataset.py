@@ -8,8 +8,8 @@ import pandas as pd
 ## VARIABLES
 
 data_dir = '/home/lukeew/Local_work/data/01_SLW_xgb'
-reference_mask_dir = data_dir + '/CHCH_v2_reference/processed{}/'
-output_dir = data_dir + '/CHCH_v2_reference/'
+reference_mask_dir = data_dir + '/CHCH_v3_reference/processed{}/'
+output_dir = data_dir + '/CHCH_v3_reference/'
 
 ## FUNCTIONS
 
@@ -26,6 +26,7 @@ def getPeaks(date):
 
     wlwc_target = ds.wlwc.values
     slwc_target = ds.slwc.values
+    mpc_target = ds.mpc.values
     slcc_target = ds.slcc.values
     ic_target = ds.ic.values
     undet_target = ds.undet.values # Undetermined by reference mask
@@ -54,7 +55,7 @@ def getPeaks(date):
                 'peak_width' : properties['widths'][peak_idx],
                 'peak_width_height' : properties['width_heights'][peak_idx],
                 'peak_prominence' : properties['prominences'][peak_idx],
-                'peak_alt' : altitude[peak_alt_idx],
+                'peak_alt' : altitude[peak_alt_idx]/1000,
                 'num_peaks' : len(peaks),
                 'peak_order' : peak_idx,
                 
@@ -65,6 +66,7 @@ def getPeaks(date):
                 'wlwc_target' : wlwc_target[time_idx,peak_alt_idx],
                 'slwc_target' : slwc_target[time_idx,peak_alt_idx],
                 'slcc_target' : slcc_target[time_idx,peak_alt_idx],
+                'mpc_target' : mpc_target[time_idx,peak_alt_idx],
                 'ic_target' : ic_target[time_idx,peak_alt_idx],
                 'undet_target' : undet_target[time_idx,peak_alt_idx],
                 'unan_target' : unan_target[time_idx,peak_alt_idx],
