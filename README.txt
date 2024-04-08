@@ -1,9 +1,15 @@
-000_MPL_processing.py - creates VDR reference mask.
-001_peaks.py - creates peak properties dataset.
-002_misc_peaks_analyis_1d.py - creates Fig. 2, and Fig. 3 if altered.
-004_multiple_peaks.py - creates Fig. 1.
-005_train_model.py - creates and trains XGB models. Contains code for creating paper Figs. 7, 8, 9.
-007_alt_intercomp_multiclass.py - creates Fig. 6.
-009_mask_plot.py - creates Figs. 4, 5.
+README for 100- scripts
 
-'models' dir - multi_ij_no_hp.json is the final working version.
+100_vdr_threshold.ipynb : exploratory analysis of VDR properties, to determine best liquid water threshold
+101_vdr_ref_mask.ipynb : one-off processing of new VDR reference mask
+102_vdr_ref_mask.py : script for processing of new VDR reference mask for full dataset
+
+Current version of new reference mask saves to CHCH_v2_reference directory. Changes from previous version:
+    - Classifies as WLCC, SLWC, SLCC or IC
+    - Follows reviewer suggestions for liquid and mixed phase thresholds
+    - Adds undetermined and unknown categories
+
+103_training_dataset : one-off processing of peak selection for preparation of training dataset
+104_training_dataset : script for processing of peak dataset and saving to CSV
+
+Current version saves to CHCH_v2_reference/peaks_training_df.csv. Records metadata, peak properties and reference mask target. 
