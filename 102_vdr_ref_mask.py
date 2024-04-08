@@ -9,7 +9,7 @@ import xarray as xr
 
 data_dir = '/home/lukeew/Local_work/data/01_SLW_xgb'
 vdr_mask_data_dir = data_dir + '/CHCH_v1_reference/processed{}'
-output_dir = data_dir + '/CHCH_v2_reference/processed{}/'
+output_dir = data_dir + '/CHCH_v3_reference/processed{}/'
 
 EXCL_VARS = ['ICC_ij', 'ICC_j', 'LCC_ij', 'LCC_j', 'SLCC_ij', 'SLCC_j', 'WLCC_ij', 'WLCC_j', 
              'vdr_threshold', 'lr','backscatter_sd','amps_flag','lat','lon', 'time_bnds','altitude','cbh',
@@ -26,6 +26,7 @@ def classify(ds, liq_threshold = liq_threshold, mix_threshold = mix_threshold):
 
     ds['wlwc'] = xr.where((ds.vdr_cm <= liq_threshold) & (ds.temp >= 0),1,0).astype('int8') # Warm liquid water clouds
     ds['slwc'] = xr.where((ds.vdr_cm <= liq_threshold) & (ds.temp <  0),1,0).astype('int8') # Supercooled liquid water clouds
+    ds['mpc'] = xr.where((ds.vdr_cm <= mix_threshold) & (ds.vdr_cm > liq_threshold) & (ds.temp <  0),1,0).astype('int8') # Mixed phase clouds
     ds['slcc'] = xr.where((ds.vdr_cm <= mix_threshold) & (ds.temp <  0),1,0).astype('int8') # Supercooled liquid water containing clouds 
     ds['ic']   = xr.where((ds.vdr_cm >  mix_threshold) & (ds.temp <  0),1,0).astype('int8') # Ice clouds
 
