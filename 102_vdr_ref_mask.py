@@ -1,6 +1,9 @@
 ## IMPORTS
 
+import os
+import glob
 import xarray as xr
+
 
 ## VARIABLES
 
@@ -54,7 +57,22 @@ def process(date):
     ds.close()
 
 
+def getUnproDates():
+
+    dates = [file[-11:-3].replace('-','') for file in sorted(glob.glob(vdr_mask_data_dir.format('*')+'/*.nc'))]
+    unprocessed_dates = []
+
+    for date in dates:
+        if not os.path.exists(output_dir.format(date[:-2])+str(date)+'.nc'):
+            unprocessed_dates+=[date]
+
+    return unprocessed_dates
+
+
 def main():
+
+    date_list = getUnproDates()
+
     for date in date_list:
         process(date)
 
