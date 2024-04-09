@@ -28,3 +28,7 @@ README for 100- scripts
 108_apply_model.py : script for processing new cloud masks from applying model
 
 - Current version saves to CHCH_v3_model_processed/{model_name} for a given model.
+
+109_model_figures.ipynb : processing of reference mask and model mask time x altitude 109_model_figures
+
+110_model_stats.ipynb : calculations of precision/recall statistics for model
