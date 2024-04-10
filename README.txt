@@ -29,6 +29,6 @@ README for 100- scripts
 
 - Current version saves to CHCH_v3_model_processed/{model_name} for a given model. Also can process AG model.
 
-109_model_figures.ipynb : processing of reference mask and model mask time x altitude 109_model_figures
+109_model_figures.ipynb : processing of reference mask and model mask time x altitude figures, including AG
 
 110_model_stats.ipynb : calculations of precision/recall statistics for model
