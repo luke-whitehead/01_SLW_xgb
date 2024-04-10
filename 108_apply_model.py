@@ -7,6 +7,10 @@ import glob
 import os
 import numpy as np
 import pandas as pd
+import sklearn
+from sklearn.pipeline import Pipeline
+
+import joblib
 
 
 ## VARIABLES
@@ -19,6 +23,7 @@ model_save_dir = reference_dir + 'models/'
 output_dir = data_dir + '/CHCH_v3_model_processed/{}/model_processed_{}/'
 
 EXCL_VARS = ['vdr', 'vdr_cm', 'wlwc', 'slwc', 'mpc', 'slcc', 'ic', 'undet', 'u_nan', 'unknown']
+new_cols = ['peak_order','num_peaks','peak_prominence','peak_magnitude','peak_width','peak_width_height','peak_temp','peak_alt']
 
 magnitude_threshold = 2e-5
 width_threshold = 1
@@ -31,11 +36,19 @@ date_list = ['20210521', '20210522']
 def loadModel(model_name):
 
     print('Loading {}...'.format(model_name))
+
     model_infile = model_save_dir + model_name +'.json'
     print('  <--- ' + model_infile)
 
-    model = xgb.XGBClassifier();
-    model.load_model(model_infile)
+    if model_name == 'AG_XGBoost':
+        model_ag_load = xgb.XGBClassifier();
+        model_ag_load.load_model(model_infile)
+        std = joblib.load(model_save_dir+'AG_scaler.save') 
+        model = Pipeline([('standardscaler',std),('xgbclassifier',model_ag_load)])
+
+    else:
+        model = xgb.XGBClassifier();
+        model.load_model(model_infile)
 
     return model
 
@@ -64,15 +77,17 @@ def process(date, model):
 
     ds_new['classified_peaks'] = xr.full_like(ds_new.backscatter, np.nan)
 
-    ds_new['wlwc'] = xr.zeros_like(ds_new.cloud_mask)
     ds_new['slwc'] = xr.zeros_like(ds_new.cloud_mask)
-    ds_new['mpc'] = xr.zeros_like(ds_new.cloud_mask)
-    ds_new['ic'] = xr.zeros_like(ds_new.cloud_mask)
-
-    ds_new['wlwc_t'] = xr.zeros_like(ds_new.time, dtype='int8')
     ds_new['slwc_t'] = xr.zeros_like(ds_new.time, dtype='int8')
-    ds_new['mpc_t'] = xr.zeros_like(ds_new.time, dtype='int8')
-    ds_new['ic_t'] = xr.zeros_like(ds_new.time, dtype='int8')
+
+    if type(model) == xgb.sklearn.XGBClassifier:
+        ds_new['wlwc'] = xr.zeros_like(ds_new.cloud_mask)
+        ds_new['mpc'] = xr.zeros_like(ds_new.cloud_mask)
+        ds_new['ic'] = xr.zeros_like(ds_new.cloud_mask)
+
+        ds_new['wlwc_t'] = xr.zeros_like(ds_new.time, dtype='int8')
+        ds_new['mpc_t'] = xr.zeros_like(ds_new.time, dtype='int8')
+        ds_new['ic_t'] = xr.zeros_like(ds_new.time, dtype='int8')
 
     ### Classifying profiles sequantially
 
@@ -100,7 +115,14 @@ def process(date, model):
                 peak_df = pd.DataFrame.from_dict([peak_dict])
 
                 ### Properties passed to model for prediction
-                Z = model.predict(peak_df)[0] #0=WLWC, 1=SLWC, 2=MPC 3=IC
+                if type(model) == xgb.sklearn.XGBClassifier:
+                    Z = model.predict(peak_df)[0] #0=WLWC, 1=SLWC, 2=MPC 3=IC
+                elif type(model) == sklearn.pipeline.Pipeline:
+                    peaks_df_ag = peak_df[new_cols]
+                    Z = model.predict(peaks_df_ag.values)[0]
+                else:
+                    raise Exception('Incompatible model')
+
 
                 min_alt = int(peak_alt_idx-properties['widths'][peak_idx])
                 max_alt = int(peak_alt_idx+properties['widths'][peak_idx])
@@ -112,24 +134,28 @@ def process(date, model):
 
                 ds_new['classified_peaks'][dict(time=time_idx,level=peak_alt_idx)] = Z
 
-                if Z == 0:
-                    ds_new['wlwc_t'][dict(time=time_idx)] = 1
-                    ds_new['wlwc'][dict(time=time_idx)][min_idx:max_idx] = 1 
-                elif Z == 1:
-                    ds_new['slwc_t'][dict(time=time_idx)] = 1
-                    ds_new['slwc'][dict(time=time_idx)][min_idx:max_idx] = 1
-                elif Z == 2:
-                    ds_new['mpc_t'][dict(time=time_idx)] = 1
-                    ds_new['mpc'][dict(time=time_idx)][min_idx:max_idx] = 1
-                elif Z == 3:
-                    ds_new['ic_t'][dict(time=time_idx)] = 1
-                    ds_new['ic'][dict(time=time_idx)][min_idx:max_idx] = 1
+                if type(model) == xgb.sklearn.XGBClassifier:
+                    if Z == 0:
+                        ds_new['wlwc_t'][dict(time=time_idx)] = 1
+                        ds_new['wlwc'][dict(time=time_idx)][min_idx:max_idx] = 1 
+                    elif Z == 1:
+                        ds_new['slwc_t'][dict(time=time_idx)] = 1
+                        ds_new['slwc'][dict(time=time_idx)][min_idx:max_idx] = 1
+                    elif Z == 2:
+                        ds_new['mpc_t'][dict(time=time_idx)] = 1
+                        ds_new['mpc'][dict(time=time_idx)][min_idx:max_idx] = 1
+                    elif Z == 3:
+                        ds_new['ic_t'][dict(time=time_idx)] = 1
+                        ds_new['ic'][dict(time=time_idx)][min_idx:max_idx] = 1
+                elif type(model) == sklearn.pipeline.Pipeline:
+                    if Z == 1:
+                        ds_new['slwc_t'][dict(time=time_idx)] = 1
+                        ds_new['slwc'][dict(time=time_idx)][min_idx:max_idx] = 1
 
 
     print('Finished {}.'.format(date))
 
     return ds_new
-
 
 
 def getUnproDates(model_name):
@@ -146,10 +172,11 @@ def getUnproDates(model_name):
 
 def main():
     
-    model_name = 'model_004'
+    model_name = 'AG_XGBoost'
     model = loadModel(model_name)
 
     date_list = getUnproDates(model_name)
+
 
     for date in date_list:
         ds = process(date, model)
