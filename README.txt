@@ -27,8 +27,12 @@ README for 100- scripts
 107_apply_model.ipynb : one-off processing of applying model to create cloud mask
 108_apply_model.py : script for processing new cloud masks from applying model
 
-- Current version saves to CHCH_v3_model_processed/{model_name} for a given model. Also can process AG model.
+- Current version saves to CHCH_v4_model_processed/{model_name} for a given model. Also can process AG model. Changes from previous version (v3):
+    - Wider mask around a peak (+- 2*width)
+    - Added 'Other' type for AG model
+    - Added 'Any peaks' mask (called classified_peaks_mask)
+    - Only processing days for which AMPS temperature data is available
 
 109_model_figures.ipynb : processing of reference mask and model mask time x altitude figures, including AG
 
-110_model_stats.ipynb : calculations of precision/recall statistics for model
+110_model_stats.ipynb : calculations of precision/recall statistics for model. Also creates and plots altitude/frequency figure.
