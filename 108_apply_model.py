@@ -20,7 +20,7 @@ reference_dir = data_dir + '/CHCH_v3_reference/'
 reference_mask_dir = reference_dir + 'processed{}/'
 model_save_dir = reference_dir + 'models/'
 
-output_dir = data_dir + '/CHCH_v3_model_processed/{}/model_processed_{}/'
+output_dir = data_dir + '/CHCH_v4_model_processed/{}/model_processed_{}/'
 
 EXCL_VARS = ['vdr', 'vdr_cm', 'wlwc', 'slwc', 'mpc', 'slcc', 'ic', 'undet', 'u_nan', 'unknown']
 new_cols = ['peak_order','num_peaks','peak_prominence','peak_magnitude','peak_width','peak_width_height','peak_temp','peak_alt']
@@ -28,10 +28,26 @@ new_cols = ['peak_order','num_peaks','peak_prominence','peak_magnitude','peak_wi
 magnitude_threshold = 2e-5
 width_threshold = 1
 
-date_list = ['20210521', '20210522']
-
-
 ## FUNCTIONS
+
+def getValidDates(date_list):
+    '''Function to identify and drop dates without temperature information'''
+
+    new_date_list = []
+
+    for date in date_list:
+
+        infile_ref = reference_mask_dir.format(date[:-2])+str(date)+'.nc'
+        ds_ref = xr.open_dataset(infile_ref)
+
+        result = np.isnan(ds_ref.temp).any()  # returns True if the temperature dataset contains at least 1 NaN
+
+        ds_ref.close()
+
+        if ~result:
+            new_date_list += [date]
+
+    return new_date_list
 
 def loadModel(model_name):
 
@@ -73,12 +89,19 @@ def process(date, model):
     ds_new = ds.copy()
     ds.close()
 
+
+
     ### Initializing output dataset
 
-    ds_new['classified_peaks'] = xr.full_like(ds_new.backscatter, np.nan)
+    ds_new['classified_peaks'] = xr.full_like(cloud_mask, -1)
+    ds_new['classified_peaks_mask'] = xr.zeros_like(cloud_mask)
 
     ds_new['slwc'] = xr.zeros_like(ds_new.cloud_mask)
     ds_new['slwc_t'] = xr.zeros_like(ds_new.time, dtype='int8')
+
+    if type(model) == sklearn.pipeline.Pipeline:
+        ds_new['other'] = xr.zeros_like(ds_new.cloud_mask)
+        ds_new['other_t'] = xr.zeros_like(ds_new.time, dtype='int8')
 
     if type(model) == xgb.sklearn.XGBClassifier:
         ds_new['wlwc'] = xr.zeros_like(ds_new.cloud_mask)
@@ -124,8 +147,8 @@ def process(date, model):
                     raise Exception('Incompatible model')
 
 
-                min_alt = int(peak_alt_idx-properties['widths'][peak_idx])
-                max_alt = int(peak_alt_idx+properties['widths'][peak_idx])
+                min_alt = int(peak_alt_idx-(2*properties['widths'][peak_idx]))
+                max_alt = int(peak_alt_idx+(2*properties['widths'][peak_idx]))
                 
                 min_idx = max(0,min_alt)
                 max_idx = min(299,max_alt)
@@ -133,6 +156,7 @@ def process(date, model):
                 ### Model result saved to output dataset
 
                 ds_new['classified_peaks'][dict(time=time_idx,level=peak_alt_idx)] = Z
+                ds_new['classified_peaks_mask'][dict(time=time_idx)][min_idx:max_idx] = 1
 
                 if type(model) == xgb.sklearn.XGBClassifier:
                     if Z == 0:
@@ -151,7 +175,9 @@ def process(date, model):
                     if Z == 1:
                         ds_new['slwc_t'][dict(time=time_idx)] = 1
                         ds_new['slwc'][dict(time=time_idx)][min_idx:max_idx] = 1
-
+                    elif Z == 0:
+                        ds_new['other_t'][dict(time=time_idx)] = 1
+                        ds_new['other'][dict(time=time_idx)][min_idx:max_idx] = 1
 
     print('Finished {}.'.format(date))
 
@@ -160,10 +186,14 @@ def process(date, model):
 
 def getUnproDates(model_name):
 
+    print('Getting list of valid dates...')
+
     dates = [file[-11:-3].replace('-','') for file in sorted(glob.glob(reference_mask_dir.format('*')+'/*.nc'))]
+    valid_dates = getValidDates(dates)
+
     unprocessed_dates = []
 
-    for date in dates:
+    for date in valid_dates:
         if not os.path.exists(output_dir.format(model_name,date[:-2])+str(date)+'.nc'):
             unprocessed_dates+=[date]
 
@@ -172,11 +202,12 @@ def getUnproDates(model_name):
 
 def main():
     
-    model_name = 'AG_XGBoost'
+    model_name = 'model_001'
     model = loadModel(model_name)
 
     date_list = getUnproDates(model_name)
 
+    print('Got dates, start processing...')
 
     for date in date_list:
         ds = process(date, model)
