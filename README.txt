@@ -38,3 +38,5 @@ README for 100- scripts
 110_model_stats.ipynb : calculations of precision/recall statistics for model mask. Also creates and plots altitude/frequency figure.
 
 111_model_shap.ipynb : analysis of model performance, with confusion matrices and SHAP statistics
+
+112_reduced_feature_models.ipynb : analysis to produce Section 3.6
