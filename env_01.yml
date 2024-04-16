@@ -12,7 +12,7 @@ dependencies:
   - xarray
   - conda-forge::netCDF4
   - dask
-  - conda-forge::py-xgboost
-  - conda-forge::shap
+  - conda-forge::py-xgboost==2.0.3
+  - conda-forge::shap==0.45.0
   - seaborn
   
