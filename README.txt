@@ -35,4 +35,6 @@ README for 100- scripts
 
 109_model_figures.ipynb : processing of reference mask and model mask time x altitude figures, including AG
 
-110_model_stats.ipynb : calculations of precision/recall statistics for model. Also creates and plots altitude/frequency figure.
+110_model_stats.ipynb : calculations of precision/recall statistics for model mask. Also creates and plots altitude/frequency figure.
+
+111_model_shap.ipynb : analysis of model performance, with confusion matrices and SHAP statistics
