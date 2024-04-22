@@ -257,6 +257,7 @@ def process(date):
     temps_da = subsample_amps(alcf_ds,amps_temps, amps_range)
 
     ds['cloud_mask'] = alcf_ds.rename_dims({'level':'height'}).cloud_mask
+    ds['backscatter'] = alcf_ds.backscatter
     ds['temp'] = temps_da
 
     print(date,' - Calculating VDR')

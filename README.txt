@@ -5,7 +5,10 @@ README for 100- scripts
 101_vdr_ref_mask.ipynb : one-off processing of new VDR reference mask
 102_vdr_ref_mask.py : script for processing of new VDR reference mask for full dataset
 
-- Current version of new reference mask saves to CHCH_v3_reference directory. Changes from previous version:
+- Current version of new reference mask saves to CHCH_v4_reference directory. Changes from previous version:
+    - mpl2nc pre-processing step changed to have subsampling done before calculation of VDR
+
+Changes in CHCH_v3_reference:
     - Adds MPC category (i.e. SLCC except SLWC)
 
 - Changes in CHCH_v2_reference:

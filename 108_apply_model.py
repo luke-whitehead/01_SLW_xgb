@@ -16,11 +16,11 @@ import joblib
 ## VARIABLES
 
 data_dir = '/home/lukeew/Local_work/data/01_SLW_xgb'
-reference_dir = data_dir + '/CHCH_v3_reference/'
+reference_dir = data_dir + '/CHCH_v4_reference/'
 reference_mask_dir = reference_dir + 'processed{}/'
 model_save_dir = reference_dir + 'models/'
 
-output_dir = data_dir + '/CHCH_v4_model_processed/{}/model_processed_{}/'
+output_dir = data_dir + '/CHCH_v5_model_processed/{}/model_processed_{}/'
 
 EXCL_VARS = ['vdr', 'vdr_cm', 'wlwc', 'slwc', 'mpc', 'slcc', 'ic', 'undet', 'u_nan', 'unknown']
 new_cols = ['peak_order','num_peaks','peak_prominence','peak_magnitude','peak_width','peak_width_height','peak_temp','peak_alt']
@@ -84,7 +84,7 @@ def process(date, model):
     backscatter = ds.backscatter.values
     temp = ds.temp.values
     cloud_mask = ds.cloud_mask
-    altitude = ds.zfull.values
+    altitude = ds.height.values
 
     ds_new = ds.copy()
     ds.close()
@@ -155,7 +155,7 @@ def process(date, model):
 
                 ### Model result saved to output dataset
 
-                ds_new['classified_peaks'][dict(time=time_idx,level=peak_alt_idx)] = Z
+                ds_new['classified_peaks'][dict(time=time_idx,height=peak_alt_idx)] = Z
                 ds_new['classified_peaks_mask'][dict(time=time_idx)][min_idx:max_idx] = 1
 
                 if type(model) == xgb.sklearn.XGBClassifier:

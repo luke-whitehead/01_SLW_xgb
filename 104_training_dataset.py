@@ -8,8 +8,8 @@ import pandas as pd
 ## VARIABLES
 
 data_dir = '/home/lukeew/Local_work/data/01_SLW_xgb'
-reference_mask_dir = data_dir + '/CHCH_v3_reference/processed{}/'
-output_dir = data_dir + '/CHCH_v3_reference/'
+reference_mask_dir = data_dir + '/CHCH_v4_reference/processed{}/'
+output_dir = data_dir + '/CHCH_v4_reference/'
 
 ## FUNCTIONS
 
@@ -21,7 +21,7 @@ def getPeaks(date):
     ds = xr.open_dataset(infile)
 
     backscatter = ds.backscatter.values 
-    altitude = ds.zfull.values
+    altitude = ds.height.values  #may need to change height to zfull depending on how reference mask was set up
     temperature = ds.temp.values
 
     wlwc_target = ds.wlwc.values
