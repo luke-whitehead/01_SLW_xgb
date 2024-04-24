@@ -20,7 +20,7 @@ mpl2nc_dir = data_dir + '/CHCH_preprocessed/mpl2nc{}/'
 
 alcf_dir = data_dir + '/CHCH_preprocessed/alcf{}/lidar/'
 
-output_dir = data_dir + '/CHCH_v4_reference/preprocessed{}/'
+output_dir = data_dir + '/CHCH_v6_reference/preprocessed{}/'
 
 
 ## FUNCTIONS
@@ -28,6 +28,7 @@ output_dir = data_dir + '/CHCH_v4_reference/preprocessed{}/'
 # Opening MPL
 
 def getDropVars():
+    ### Function to identify unnecessary variables from the input dataset that should be dropped
     date = '20210518'
     path = (mpl2nc_dir+'{}1200.nc').format(date[:-2],date)
     
@@ -110,6 +111,8 @@ def openAMPS(date):
     pres_levels_interpolate = np.flip(f(xx_new))
     
     alt_levels = pres2alt(pres_levels_interpolate)
+
+    amps_ds.close()
     
     return site_temp_interpol, alt_levels
 
@@ -144,8 +147,8 @@ def subsample_mpl(alcf_ds, mpl_ds):
 
     ### Regrid MPL data to same size as ALCF data
         
-    copol_grid = np.full(np.shape(alcf_cloud_mask),-999.)
-    crosspol_grid = np.full(np.shape(alcf_cloud_mask),-999.)
+    copol_grid = np.full(np.shape(alcf_cloud_mask),np.nan)
+    crosspol_grid = np.full(np.shape(alcf_cloud_mask),np.nan)
     
     for time_idx, profile in enumerate(alcf_cloud_mask):
 
@@ -165,15 +168,15 @@ def subsample_mpl(alcf_ds, mpl_ds):
                 pixel_crosspol = mpl_nrb_crosspol[mpl_time_idx, mpl_alt_idx]
                 
                 if pixel_copol==np.inf or pixel_copol==-np.inf:
-                    pixel_copol = -999
+                    pixel_copol = np.nan
                 if pixel_crosspol==np.inf or pixel_crosspol==-np.inf:
-                    pixel_crosspol = -999
+                    pixel_crosspol = np.nan
                         
                 copol_grid[time_idx,alt_idx] = pixel_copol
                 crosspol_grid[time_idx,alt_idx] = pixel_crosspol
                             
-    copol_da = xr.DataArray(copol_grid, coords=[('time',alcf_ds.time.data), ('height',alcf_ds.zfull.data)])
-    crosspol_da = xr.DataArray(crosspol_grid, coords=[('time',alcf_ds.time.data), ('height',alcf_ds.zfull.data)])
+    copol_da = xr.DataArray(copol_grid, coords=[('time',alcf_ds.time.data), ('level',alcf_ds.zfull.data)])
+    crosspol_da = xr.DataArray(crosspol_grid, coords=[('time',alcf_ds.time.data), ('level',alcf_ds.zfull.data)])
     new_mpl_ds = xr.Dataset({'copol':copol_da, 'crosspol':crosspol_da})
     
     return new_mpl_ds
@@ -194,47 +197,10 @@ def subsample_amps(alcf_ds, amps_temps, amps_heights):
                 temp = amps_temps[time_idx, amps_alt_idx]
                 temps_grid[time_idx,alt_idx] = temp
 
-    temps_da = xr.DataArray(temps_grid, coords=[('time',alcf_ds.time.data), ('height',alcf_ds.zfull.data)])
+    temps_da = xr.DataArray(temps_grid, coords=[('time',alcf_ds.time.data), ('level',alcf_ds.zfull.data)])
 
     return temps_da
 
-# Cloud layer averaging of VDR
-
-def group_non_nan(vdr_arr,cloud_mask_arr):
-        """
-        Looks at individual cloud mask profile. 
-        Identifies groups (ie different cloud layers).
-        Gets the nanmean VDR of each group.
-        Fills group with nanmean VDR and returns array same size as cloud mask.
-
-        """
-        cm_df = pd.Series(cloud_mask_arr)
-        vdr_df = pd.Series(vdr_arr)
-        vdr_mean_arr = np.full(np.shape(cloud_mask_arr),np.nan)
-        for _,v in cm_df[cm_df==1].groupby((cm_df==0).cumsum()):
-            v_mean=np.nanmean(vdr_df[v.index])
-            vdr_mean_arr[v.index]=v_mean
-        return vdr_mean_arr
-
-
-def get_layer_vdr(ds):
-
-    vdr_subsamp, alcf_cloud_mask = ds.vdr, ds.cloud_mask
-    
-    # Layer-averaging of VDR
-
-    vdr_grouped_mean = np.full(np.shape(vdr_subsamp),np.nan)
-
-    for time_idx, profile in enumerate(alcf_cloud_mask):
-        vdr_grouped_mean[time_idx]= group_non_nan(vdr_subsamp[time_idx],profile)
-
-    # Removes values not in (0,1)
-    vdr_grouped_mean = np.where(vdr_grouped_mean<0,np.nan,vdr_grouped_mean)
-    vdr_grouped_mean = np.where(vdr_grouped_mean>1,np.nan,vdr_grouped_mean)
-
-    vdr_grouped_da = xr.DataArray(vdr_grouped_mean, coords=[('time',ds.time.data), ('height',ds.height.data)])
-
-    return vdr_grouped_da
 
 
 def process(date):
@@ -256,14 +222,12 @@ def process(date):
     print(date,' - Subsampling AMPS')
     temps_da = subsample_amps(alcf_ds,amps_temps, amps_range)
 
-    ds['cloud_mask'] = alcf_ds.rename_dims({'level':'height'}).cloud_mask
+    ds['cloud_mask'] = alcf_ds.cloud_mask
     ds['backscatter'] = alcf_ds.backscatter
     ds['temp'] = temps_da
 
     print(date,' - Calculating VDR')
     ds = ds.assign(vdr = ds.crosspol/ds.copol)
-    vdr_layer = get_layer_vdr(ds)
-    ds['vdr_layer'] = vdr_layer
 
     print('Finished {}.'.format(date))
 

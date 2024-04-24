@@ -6,6 +6,14 @@ README for 100- scripts
 102_vdr_ref_mask.py : script for processing of new VDR reference mask for full dataset
 
 - Current version of new reference mask saves to CHCH_v4_reference directory. Changes from previous version:
+    - Preprocessing no longer does VDR layer calculation, just calculates VDR
+    - New reference mask follows principle of Lewis et al. Each cloudy bin is assigned a cloud phase diagnostic (CPD) as per previous versions.
+    - Each layer is analysed and the most frequent CPD is assigned to the whole layer
+
+Changes in CHCH_v5_reference:
+    - Experimental, changed classification from VDR layer to VDR. Changes better incorporated in v6.
+
+Changes in CHCH_v4_reference:
     - mpl2nc pre-processing step changed to have subsampling done before calculation of VDR
 
 Changes in CHCH_v3_reference:
