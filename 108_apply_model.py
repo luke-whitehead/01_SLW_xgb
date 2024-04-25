@@ -16,13 +16,13 @@ import joblib
 ## VARIABLES
 
 data_dir = '/home/lukeew/Local_work/data/01_SLW_xgb'
-reference_dir = data_dir + '/CHCH_v4_reference/'
+reference_dir = data_dir + '/CHCH_v6_reference/'
 reference_mask_dir = reference_dir + 'processed{}/'
 model_save_dir = reference_dir + 'models/'
 
-output_dir = data_dir + '/CHCH_v5_model_processed/{}/model_processed_{}/'
+output_dir = data_dir + '/CHCH_v6_model_processed/{}/model_processed_{}/'
 
-EXCL_VARS = ['vdr', 'vdr_cm', 'wlwc', 'slwc', 'mpc', 'slcc', 'ic', 'undet', 'u_nan', 'unknown']
+EXCL_VARS = ['copol', 'crosspol','vdr', 'undet_nan', 'bin_wlwc', 'bin_slwc', 'bin_mpc', 'bin_slcc', 'bin_ic', 'bin_liq', 'bin_undet', 'layer_ice', 'layer_liq', 'layer_mix', 'layer_undet','layer_wlwc', 'layer_slwc', 'layer_slcc']
 new_cols = ['peak_order','num_peaks','peak_prominence','peak_magnitude','peak_width','peak_width_height','peak_temp','peak_alt']
 
 magnitude_threshold = 2e-5
@@ -30,24 +30,24 @@ width_threshold = 1
 
 ## FUNCTIONS
 
-def getValidDates(date_list):
-    '''Function to identify and drop dates without temperature information'''
+# def getValidDates(date_list):
+#     '''Function to identify and drop dates without temperature information'''
 
-    new_date_list = []
+#     new_date_list = []
 
-    for date in date_list:
+#     for date in date_list:
 
-        infile_ref = reference_mask_dir.format(date[:-2])+str(date)+'.nc'
-        ds_ref = xr.open_dataset(infile_ref)
+#         infile_ref = reference_mask_dir.format(date[:-2])+str(date)+'.nc'
+#         ds_ref = xr.open_dataset(infile_ref)
 
-        result = np.isnan(ds_ref.temp).any()  # returns True if the temperature dataset contains at least 1 NaN
+#         result = np.isnan(ds_ref.temp).any()  # returns True if the temperature dataset contains at least 1 NaN
 
-        ds_ref.close()
+#         ds_ref.close()
 
-        if ~result:
-            new_date_list += [date]
+#         if ~result:
+#             new_date_list += [date]
 
-    return new_date_list
+#     return new_date_list
 
 def loadModel(model_name):
 
@@ -84,7 +84,7 @@ def process(date, model):
     backscatter = ds.backscatter.values
     temp = ds.temp.values
     cloud_mask = ds.cloud_mask
-    altitude = ds.height.values
+    altitude = ds.level.values
 
     ds_new = ds.copy()
     ds.close()
@@ -147,8 +147,8 @@ def process(date, model):
                     raise Exception('Incompatible model')
 
 
-                min_alt = int(peak_alt_idx-(2*properties['widths'][peak_idx]))
-                max_alt = int(peak_alt_idx+(2*properties['widths'][peak_idx]))
+                min_alt = int(peak_alt_idx-(properties['widths'][peak_idx]))
+                max_alt = int(peak_alt_idx+(properties['widths'][peak_idx]))
                 
                 min_idx = max(0,min_alt)
                 max_idx = min(299,max_alt)

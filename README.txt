@@ -54,3 +54,6 @@ Changes in CHCH_v3_reference:
 
 113_mpl2nc_processing.ipynb : see 114. Replacing 000_MPL_processing.
 114_mpl2nc_processing.py : preprocessing script. Takes mpl2nc, AMPS and ALCF and produces layer averaged VDR, for classification with script 102.
+
+115_mace_vdr.ipynb : experimental, calculation of layer integrated backscatter and depolarization, and 2d histogram as per Mace classification
+116_lewis_vdr.ipynb : experimental, following Lewis et al. classification. Results incorporated into reference mask v6.

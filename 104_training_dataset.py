@@ -8,8 +8,8 @@ import pandas as pd
 ## VARIABLES
 
 data_dir = '/home/lukeew/Local_work/data/01_SLW_xgb'
-reference_mask_dir = data_dir + '/CHCH_v4_reference/processed{}/'
-output_dir = data_dir + '/CHCH_v4_reference/'
+reference_mask_dir = data_dir + '/CHCH_v6_reference/processed{}/'
+output_dir = data_dir + '/CHCH_v6_reference/'
 
 ## FUNCTIONS
 
@@ -21,16 +21,16 @@ def getPeaks(date):
     ds = xr.open_dataset(infile)
 
     backscatter = ds.backscatter.values 
-    altitude = ds.height.values  #may need to change height to zfull depending on how reference mask was set up
+    altitude = ds.level.values  #may need to change variable name depending on reference mask
     temperature = ds.temp.values
 
-    wlwc_target = ds.wlwc.values
-    slwc_target = ds.slwc.values
-    mpc_target = ds.mpc.values
-    slcc_target = ds.slcc.values
-    ic_target = ds.ic.values
-    undet_target = ds.undet.values # Undetermined by reference mask
-    unan_target = ds.u_nan.values # Unknown due to missing data
+    wlwc_target = ds.layer_wlwc.values
+    slwc_target = ds.layer_slwc.values
+    mpc_target = ds.layer_mix.values
+    slcc_target = ds.layer_slcc.values
+    ic_target = ds.layer_ice.values
+    undet_target = ds.layer_undet.values # Undetermined by reference mask
+    unan_target = ds.undet_nan.values # Unknown due to missing data
 
     magnitude_threshold = 2e-5
     width_threshold = 1

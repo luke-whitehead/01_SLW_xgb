@@ -65,7 +65,6 @@ def get_layer_modes(cloud_mask, liq, mix, ice, undet):
     return modes_arr
 
 
-
 def classify_layer(ds):
     modes_all = np.full(np.shape(ds.cloud_mask),np.nan)
 
@@ -76,13 +75,14 @@ def classify_layer(ds):
 
     modes_da = xr.DataArray(modes_all, coords=[('time',ds.time.data),('level',ds.level.data)])
 
-    ds['layer_ice'] = xr.where((modes_da == 3),1,0).astype('int8')
-    ds['layer_liq'] = xr.where((modes_da == 2),1,0).astype('int8')
-    ds['layer_mix'] = xr.where((modes_da == 1),1,0).astype('int8')
+    ds['layer_ice'] = xr.where((modes_da == 3)|((~np.isnan(modes_da))&(ds.temp<=-40)),1,0).astype('int8')
+    ds['layer_liq'] = xr.where((modes_da == 2)&(ds.temp>-40),1,0).astype('int8')
+    ds['layer_mix'] = xr.where((modes_da == 1)&(ds.temp>-40),1,0).astype('int8')
     ds['layer_undet'] = xr.where((modes_da == 0),1,0).astype('int8')
 
-    ds['layer_wlwc'] = xr.where((modes_da == 2) & (ds.temp >= 0),1,0).astype('int8')
-    ds['layer_slwc'] = xr.where((modes_da == 2) & (ds.temp < 0),1,0).astype('int8')
+    ds['layer_wlwc'] = xr.where((ds.layer_liq == 1) & (ds.temp >= 0),1,0).astype('int8')
+    ds['layer_slwc'] = xr.where((ds.layer_liq == 1) & (ds.temp < 0),1,0).astype('int8')
+    ds['layer_slcc'] = xr.where((ds.layer_slwc == 1) | (ds.layer_mix == 1),1,0).astype('int8')
 
     return ds
 
