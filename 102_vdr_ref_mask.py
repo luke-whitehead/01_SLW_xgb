@@ -22,6 +22,7 @@ mix_threshold = 0.4
 ## FUNCTIONS
 
 def classify_bin(ds, liq_threshold = liq_threshold, mix_threshold = mix_threshold):
+    ### Classifies each altitude bin to get 'cloud phase diagnostic'
 
     ds['undet_nan']   = xr.where((ds.vdr.isnull()),1,0).astype('int8') # Gets Nans due to missing data
 
@@ -43,6 +44,7 @@ def classify_bin(ds, liq_threshold = liq_threshold, mix_threshold = mix_threshol
 
 
 def get_layer_modes(cloud_mask, liq, mix, ice, undet):
+    ### Returns a classification based on the most common cloud phase diagnostic in a layer
 
     cm_df = pd.Series(cloud_mask)
     liq_df = pd.Series(liq)
@@ -66,6 +68,8 @@ def get_layer_modes(cloud_mask, liq, mix, ice, undet):
 
 
 def classify_layer(ds):
+    ### Classifies cloud layer based on cloud phase diagnostic calculated earlier
+
     modes_all = np.full(np.shape(ds.cloud_mask),np.nan)
 
     for time_idx, cm_profile in enumerate(ds.cloud_mask):   

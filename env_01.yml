@@ -14,5 +14,5 @@ dependencies:
   - dask
   - conda-forge::py-xgboost==2.0.3
   - conda-forge::shap==0.45.0
-  - seaborn
+  - seaborn==0.13.2
   

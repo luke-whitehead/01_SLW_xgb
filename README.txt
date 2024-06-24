@@ -27,18 +27,22 @@ Changes in CHCH_v3_reference:
 103_training_dataset.ipynb : one-off processing of peak selection for preparation of training dataset
 104_training_dataset.py : script for processing of peak dataset and saving to CSV
 
-- Current version saves to CHCH_v3_reference/peaks_training_df.csv. Records metadata, peak properties and reference mask target. 
+- Current version saves to CHCH_v6_reference/peaks_training_df.csv. Records metadata, peak properties and reference mask target. 
 
 105_training_dataset_analysis.ipynb : exploratory analysis of peak dataset and properties
 
 106_train_model.ipynb : XGBoost model training
 
-- Current version saves to CHCH_v3_reference/models/. Model versions correspond to different scoring methods from hyperparameter grid searches.
+- Current version saves to CHCH_v6_reference/models/. Model versions correspond to different scoring methods from hyperparameter grid searches.
 
 107_apply_model.ipynb : one-off processing of applying model to create cloud mask
 108_apply_model.py : script for processing new cloud masks from applying model
 
-- Current version saves to CHCH_v4_model_processed/{model_name} for a given model. Also can process AG model. Changes from previous version (v3):
+- Current version saves to CHCH_v6_model_processed/{model_name} for a given model. Also can process AG model. Changes from previous version:
+    - Updated for latest model classification
+    - Reverts back to narrow mask around a peak (+- 1*width)
+
+Changes in v4:
     - Wider mask around a peak (+- 2*width)
     - Added 'Other' type for AG model
     - Added 'Any peaks' mask (called classified_peaks_mask)

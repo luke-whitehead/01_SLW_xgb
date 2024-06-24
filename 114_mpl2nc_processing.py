@@ -29,7 +29,7 @@ output_dir = data_dir + '/CHCH_v6_reference/preprocessed{}/'
 
 def getDropVars():
     ### Function to identify unnecessary variables from the input dataset that should be dropped
-    date = '20210518'
+    date = '20210518' # So just opens one day
     path = (mpl2nc_dir+'{}1200.nc').format(date[:-2],date)
     
     d = xr.open_dataset(path)

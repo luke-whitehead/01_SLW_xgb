@@ -425,7 +425,7 @@ def getUnproDates(model_name):
 
 def main():
     
-    model_name = 'AG_XGBoost'
+    model_name = 'model_003'
     model = loadModel(model_name)
 
     date_list = getUnproDates(model_name)
