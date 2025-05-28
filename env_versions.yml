@@ -1,0 +1,17 @@
+name: 01_SLW_xgb
+channels:
+  - defaults
+dependencies:
+  - xarray==2023.6.0
+  - scipy==1.13.0
+  - numpy==1.23.5
+  - conda-forge::netcdf4==1.6.3
+  - conda-forge::py-xgboost==2.0.3
+  - python==3.10.14
+  - conda-forge::pyhdf==0.11.3
+  - matplotlib==3.8.0
+  - pandas==2.2.1
+  - dask==2023.11.0
+  - jupyter==1.0.0
+  - seaborn==0.13.2
+  - conda-forge::shap==0.45.0
